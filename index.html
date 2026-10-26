@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SnapVault - الحسابات</title>
+    
+    <!-- إعدادات تطبيق الآيفون (PWA) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SnapVault">
+    <meta name="theme-color" content="#09090b">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/en/thumb/c/c4/Snapchat_logo.svg/512px-Snapchat_logo.svg.png">
+
+    <!-- Tailwind CSS & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #09090b;
+            color: #fafafa;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .snap-ring {
+            background: linear-gradient(45deg, #FFFC00, #ff9900, #ff0055);
+            padding: 2.5px;
+        }
+        .glass-card {
+            background: rgba(24, 24, 27, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between max-w-md mx-auto relative overflow-x-hidden">
+
+    <!-- الهيدر -->
+    <header class="p-5 flex items-center justify-between sticky top-0 z-20 bg-[#09090b]/80 backdrop-blur-md border-b border-white/5">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#FFFC00] flex items-center justify-center text-black shadow-lg shadow-yellow-400/20">
+                <i class="fa-brands fa-snapchat text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold tracking-tight">Snap<span class="text-[#FFFC00]">Vault</span></h1>
+                <p class="text-[11px] text-zinc-400">عارض وحافظ القصص والأضواء</p>
+            </div>
+        </div>
+        <button onclick="toggleAddModal()" class="w-10 h-10 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 flex items-center justify-center text-zinc-200 transition active:scale-90 border border-white/5">
+            <i class="fa-solid fa-plus text-lg"></i>
+        </button>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 p-5 space-y-5">
+        
+        <!-- بحث سريع لفتح أي حساب مباشرة -->
+        <div class="glass-card rounded-2xl p-2 flex items-center gap-2">
+            <i class="fa-solid fa-magnifying-glass text-zinc-500 mr-3"></i>
+            <input type="text" id="quickUser" placeholder="ادخل يوزر سناب للفتح المباشر..." 
+                class="bg-transparent w-full text-sm text-white focus:outline-none py-2">
+            <button onclick="openQuickUser()" class="bg-[#FFFC00] text-black font-bold text-xs px-4 py-2.5 rounded-xl shrink-0 active:scale-95 transition">
+                استعراض
+            </button>
+        </div>
+
+        <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold text-zinc-300 flex items-center gap-2">
+                <i class="fa-solid fa-star text-[#FFFC00] text-xs"></i> الحسابات المحفوظة
+            </h2>
+            <span id="accountCount" class="text-xs bg-zinc-800 text-zinc-400 px-2.5 py-0.5 rounded-full">0</span>
+        </div>
+
+        <!-- شبكة الحسابات -->
+        <div id="accountsGrid" class="grid grid-cols-1 gap-3">
+            <!-- يتم توليد البطاقات هنا عبر الجافاسكربت -->
+        </div>
+
+    </main>
+
+    <!-- نافذة إضافة حساب جديد -->
+    <div id="addModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-5">
+        <div class="glass-card w-full max-w-sm rounded-3xl p-6 space-y-4 border border-white/10 animate-fade-in">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg">إضافة حساب جديد</h3>
+                <button onclick="toggleAddModal()" class="text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <p class="text-xs text-zinc-400">سيتم سحب الصورة الشخصية والاسم تلقائياً من الملف التعريفي العام في سناب شات.</p>
+            <input type="text" id="newUsernameInput" placeholder="اسم المستخدم (مثال: najla_ali33)" 
+                class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#FFFC00] text-left" dir="ltr">
+            <button onclick="addNewAccount()" class="w-full bg-[#FFFC00] text-black font-bold py-3 rounded-xl shadow-lg shadow-yellow-400/10 active:scale-95 transition">
+                إضافة وحفظ الحساب
+            </button>
+        </div>
+    </div>
+
+    <!-- تلميح التثبيت للآيفون -->
+    <footer class="p-4 text-center text-[11px] text-zinc-500 border-t border-white/5">
+        لتثبيت التطبيق على الآيفون: اضغط <i class="fa-solid fa-arrow-up-from-bracket mx-1 text-zinc-300"></i> ثم اختر <b>"إضافة إلى الشاشة الرئيسية"</b>
+    </footer>
+
+    <script>
+        // الحسابات الافتراضية المقتبسة من صورك
+        const defaultAccounts = [
+            { username: 'najla_ali33', name: 'نجمه 🌟', bio: 'مال للنجوم أوطان دام السماء عيونك ..💘.', avatar: '' },
+            { username: 'ra.mq5', name: 'Raghad', bio: 'حساب سناب شات عام', avatar: '' },
+            { username: 'uvo-s', name: 'Saja Ali', bio: 'حساب سناب شات عام', avatar: '' },
+            { username: 'qx.8s', name: '-', bio: 'حساب سناب شات عام', avatar: '' }
+        ];
+
+        let accounts = JSON.parse(localStorage.getItem('snapvault_accounts')) || defaultAccounts;
+
+        function saveAccounts() {
+            localStorage.setItem('snapvault_accounts', JSON.stringify(accounts));
+        }
+
+        function renderAccounts() {
+            const grid = document.getElementById('accountsGrid');
+            document.getElementById('accountCount').innerText = accounts.length;
+            grid.innerHTML = '';
+
+            accounts.forEach((acc, index) => {
+                const fallbackAvatar = `https://app.snapchat.com/web/deeplink/snapcode?username=${acc.username}&type=SVG&bitmoji=enable`;
+                const avatarSrc = acc.avatar || fallbackAvatar;
+
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-2xl p-3.5 flex items-center justify-between hover:border-white/20 transition cursor-pointer group';
+                card.innerHTML = `
+                    <div class="flex items-center gap-3.5 flex-1 min-w-0" onclick="goToUser('${acc.username}')">
+                        <div class="snap-ring rounded-full shrink-0">
+                            <img id="avatar-${acc.username}" src="${avatarSrc}" onerror="this.src='${fallbackAvatar}'" 
+                                class="w-14 h-14 rounded-full object-cover bg-zinc-900 border-2 border-[#09090b]">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 id="name-${acc.username}" class="font-bold text-base text-white truncate">${acc.name || acc.username}</h3>
+                            <p class="text-xs text-[#FFFC00] font-mono truncate" dir="ltr">@${acc.username}</p>
+                            <p id="bio-${acc.username}" class="text-[11px] text-zinc-400 truncate mt-0.5">${acc.bio || ''}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mr-2">
+                        <button onclick="deleteAccount(${index})" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center text-xs transition">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                        <button onclick="goToUser('${acc.username}')" class="w-9 h-9 rounded-xl bg-zinc-800 text-zinc-300 flex items-center justify-center group-hover:bg-[#FFFC00] group-hover:text-black transition">
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+
+                // جلب الصورة الحقيقية والاسم من موقع السناب بالخلفية
+                fetchLiveProfileInfo(acc, index);
+            });
+        }
+
+        async function fetchLiveProfileInfo(acc, index) {
+            const targetUrl = `https://www.snapchat.com/@${acc.username}`;
+            const proxies = [
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
+            ];
+
+            for (const proxy of proxies) {
+                try {
+                    const res = await fetch(proxy);
+                    if (!res.ok) continue;
+                    const html = await res.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    // محاولة الاستخراج من __NEXT_DATA__
+                    const nextDataEl = doc.getElementById('__NEXT_DATA__');
+                    if (nextDataEl) {
+                        const json = JSON.parse(nextDataEl.textContent);
+                        const pageProps = json?.props?.pageProps;
+                        const pubProfile = pageProps?.userProfile?.publicProfileInfo || pageProps?.publicProfileInfo;
+
+                        if (pubProfile) {
+                            acc.name = pubProfile.title || acc.name;
+                            acc.bio = pubProfile.bio || acc.bio;
+                            acc.avatar = pubProfile.profilePictureUrl || pubProfile.squareHeroImageUrl || acc.avatar;
+                        }
+                    }
+
+                    // محاولة احتياطية عبر وسوم OpenGraph
+                    if (!acc.avatar) {
+                        const ogImg = doc.querySelector('meta[property="og:image"]')?.content;
+                        const ogTitle = doc.querySelector('meta[property="og:title"]')?.content;
+                        if (ogImg) acc.avatar = ogImg;
+                        if (ogTitle) acc.name = ogTitle.replace(' on Snapchat', '').replace(' (@' + acc.username + ')', '');
+                    }
+
+                    // تحديث الواجهة وحفظ الكاش
+                    if (acc.avatar) {
+                        const imgEl = document.getElementById(`avatar-${acc.username}`);
+                        if (imgEl) imgEl.src = acc.avatar;
+                    }
+                    const nameEl = document.getElementById(`name-${acc.username}`);
+                    if (nameEl && acc.name) nameEl.innerText = acc.name;
+                    const bioEl = document.getElementById(`bio-${acc.username}`);
+                    if (bioEl && acc.bio) bioEl.innerText = acc.bio;
+
+                    accounts[index] = acc;
+                    saveAccounts();
+                    break;
+                } catch (e) {
+                    // تجاهل الخطأ والانتقال للبروكسي التالي
+                }
+            }
+        }
+
+        function goToUser(username) {
+            window.location.href = `users.html?user=${encodeURIComponent(username.trim())}`;
+        }
+
+        function openQuickUser() {
+            const val = document.getElementById('quickUser').value.trim().replace('@', '');
+            if (val) goToUser(val);
+        }
+
+        function toggleAddModal() {
+            const modal = document.getElementById('addModal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        function addNewAccount() {
+            const input = document.getElementById('newUsernameInput');
+            const username = input.value.trim().replace('@', '');
+            if (!username) return;
+
+            if (!accounts.some(a => a.username.toLowerCase() === username.toLowerCase())) {
+                accounts.unshift({ username, name: username, bio: 'جاري جلب البيانات...', avatar: '' });
+                saveAccounts();
+                renderAccounts();
+            }
+            input.value = '';
+            toggleAddModal();
+        }
+
+        function deleteAccount(index) {
+            event.stopPropagation();
+            accounts.splice(index, 1);
+            saveAccounts();
+            renderAccounts();
+        }
+
+        // تشغيل عند الفتح
+        renderAccounts();
+    </script>
+</body>
+</html>
