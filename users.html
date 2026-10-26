@@ -3,894 +3,718 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SnapVault - استعراض السنابات</title>
-
+    <title>SnapVault - استعراض الحساب</title>
+    
+    <!-- إعدادات تطبيق الآيفون -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0b0b0e">
+    <meta name="theme-color" content="#09090b">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --bg: #0b0b0e;
-            --card: #16161d;
-            --border: rgba(255, 255, 255, 0.09);
-            --yellow: #FFFC00;
-            --blue: #0ea5e9;
-            --text: #ffffff;
-            --muted: #9ca3af;
-        }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            max-width: 480px;
-            margin: 0 auto;
-            min-height: 100vh;
+            font-family: 'Tajawal', sans-serif;
+            background-color: #09090b;
+            color: #fafafa;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
             padding-top: env(safe-area-inset-top);
-            padding-bottom: 110px;
+            padding-bottom: env(safe-area-inset-bottom);
         }
-        /* شريط التنقل */
-        .navbar {
-            position: sticky;
-            top: 0;
-            z-index: 30;
-            background: rgba(11, 11, 14, 0.88);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-        }
-        .nav-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .nav-user {
-            font-family: monospace;
-            font-size: 14px;
-            font-weight: 700;
-            direction: ltr;
-        }
-
-        /* قسم الملف الشخصي */
-        .profile-hero {
-            padding: 22px 16px;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-        }
-        .avatar-wrap {
-            position: relative;
-            width: 96px;
-            height: 96px;
-            margin: 0 auto;
-        }
-        .avatar-ring {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
+        .snap-ring {
+            background: linear-gradient(45deg, #FFFC00, #ff9900, #ff0055);
             padding: 3px;
-            background: linear-gradient(45deg, #FFFC00, #ff8800, #ff0055);
         }
-        .avatar-ring img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #000;
-            border: 3px solid var(--bg);
+        .glass-bar {
+            background: rgba(18, 18, 21, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
-        .save-avatar-btn {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: var(--yellow);
-            color: #000;
-            border: 2px solid var(--bg);
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .tab-active {
+            color: #FFFC00;
+            border-bottom: 2px solid #FFFC00;
         }
-        .p-name {
-            font-size: 20px;
-            font-weight: 800;
-            margin-top: 12px;
-        }
-        .p-sub {
-            font-size: 12px;
-            color: var(--muted);
-            margin-top: 4px;
-            direction: ltr;
-        }
-        .p-bio {
-            font-size: 13px;
-            color: #e5e7eb;
-            margin: 10px auto 0;
-            max-width: 320px;
-            line-height: 1.5;
-        }
-        .hero-btns {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-        .pill-btn {
-            padding: 9px 16px;
-            border-radius: 99px;
-            font-size: 12px;
-            font-weight: 800;
-            border: 1px solid var(--border);
-            background: var(--card);
-            color: var(--text);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .pill-btn.yellow {
-            background: var(--yellow);
-            color: #000;
-            border-color: var(--yellow);
-        }
-
-        /* التبويبات */
-        .tabs {
-            display: flex;
-            background: var(--bg);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 63px;
-            z-index: 20;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 13px 4px;
-            background: transparent;
-            border: none;
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-        }
-        .tab-btn.active {
-            color: var(--yellow);
-            border-bottom-color: var(--yellow);
-        }
-
-        /* شريط الأدوات */
-        .toolbar {
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--muted);
-        }
-        .toolbar select {
-            background: var(--card);
-            color: var(--text);
-            border: 1px solid var(--border);
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 12px;
-        }
-
-        /* شبكة البطاقات */
-        .grid {
-            padding: 0 16px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-        .snap-card {
-            position: relative;
-            aspect-ratio: 9 / 16;
-            border-radius: 18px;
-            overflow: hidden;
-            background: var(--card);
-            border: 2px solid var(--border);
-            cursor: pointer;
-            transition: transform 0.15s, border-color 0.15s;
-        }
-        .snap-card.selected {
-            border-color: var(--yellow);
+        .story-card-selected {
+            ring: 3px solid #FFFC00;
             transform: scale(0.96);
         }
-        .snap-card video, .snap-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .card-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 45%, rgba(0,0,0,0.5) 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 10px;
-        }
-        .card-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .snap-tag {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: 700;
-        }
-        .check-circle {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.6);
-            border: 1.5px solid #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: transparent;
-        }
-        .snap-card.selected .check-circle {
-            background: var(--yellow);
-            border-color: var(--yellow);
-            color: #000;
-            font-weight: 900;
-        }
-        .card-bottom {
-            display: flex;
-            gap: 6px;
-        }
-        .view-btn {
-            flex: 1;
-            background: var(--blue);
-            color: #fff;
-            border: none;
-            padding: 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .dl-btn {
-            width: 34px;
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(6px);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        /* شريط الدمج السفلي */
-        .merge-bar {
-            position: fixed;
-            bottom: 16px;
-            left: 16px;
-            right: 16px;
-            max-width: 448px;
-            margin: 0 auto;
-            background: rgba(22, 22, 29, 0.95);
-            backdrop-filter: blur(16px);
-            border: 1.5px solid var(--yellow);
-            border-radius: 18px;
-            padding: 12px 14px;
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 40;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-        }
-        .merge-bar.active {
-            display: flex;
-        }
-
-        /* مشغل الستوري الكامل */
-        .viewer-modal {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 60;
-            display: none;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .viewer-modal.active {
-            display: flex;
-        }
-        .viewer-top {
-            padding: 16px 12px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-            z-index: 10;
-        }
-        .progress-row {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 10px;
-        }
-        .prog-bg {
-            flex: 1;
-            height: 3px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 99px;
-            overflow: hidden;
-        }
-        .prog-fill {
-            height: 100%;
-            background: var(--yellow);
-            width: 0%;
-        }
-        .viewer-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .viewer-stage {
-            flex: 1;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        .viewer-stage video, .viewer-stage img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        .tap-right { position: absolute; inset: 0 0 0 65%; z-index: 5; }
-        .tap-left  { position: absolute; inset: 0 35% 0 0; z-index: 5; }
-
-        .loader {
-            text-align: center;
-            padding: 50px 20px;
-            color: var(--muted);
-            font-size: 13px;
-        }
+        /* إخفاء شريط التمرير */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
+<body class="min-h-screen max-w-md mx-auto flex flex-col relative pb-28">
 
-    <nav class="navbar">
-        <a href="index.html" class="nav-btn">❯</a>
-        <div class="nav-user" id="navUsername">@user</div>
-        <button class="nav-btn" onclick="loadProfile()">↻</button>
+    <!-- الشريط العلوي -->
+    <nav class="sticky top-0 z-30 glass-bar px-4 py-3.5 flex items-center justify-between border-b border-white/5">
+        <a href="index.html" class="w-9 h-9 rounded-xl bg-zinc-800/80 flex items-center justify-center text-zinc-200 active:scale-90 transition">
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <div class="text-center">
+            <h1 id="navUsername" class="text-sm font-bold font-mono text-zinc-200" dir="ltr">@loading</h1>
+        </div>
+        <button onclick="refreshProfile()" class="w-9 h-9 rounded-xl bg-zinc-800/80 flex items-center justify-center text-zinc-200 active:scale-90 transition">
+            <i class="fa-solid fa-rotate-right text-sm" id="refreshIcon"></i>
+        </button>
     </nav>
 
-    <section class="profile-hero">
-        <div class="avatar-wrap">
-            <div class="avatar-ring">
-                <img id="pAvatar" src="" alt="Avatar">
+    <!-- معلومات الحساب (مستوحى من الصورتين) -->
+    <section class="p-5 flex flex-col items-center text-center border-b border-white/5 relative">
+        <div class="relative">
+            <div class="snap-ring rounded-full">
+                <img id="profileAvatar" src="https://upload.wikimedia.org/wikipedia/en/thumb/c/c4/Snapchat_logo.svg/512px-Snapchat_logo.svg.png" 
+                    class="w-24 h-24 rounded-full object-cover bg-zinc-900 border-4 border-[#09090b]">
             </div>
-            <button class="save-avatar-btn" onclick="downloadAvatar()" title="حفظ الصورة">⬇</button>
+            <button onclick="downloadAvatar()" title="حفظ الصورة الشخصية"
+                class="absolute bottom-0 left-0 w-8 h-8 rounded-full bg-[#FFFC00] text-black flex items-center justify-center shadow-lg active:scale-90 transition">
+                <i class="fa-solid fa-download text-xs"></i>
+            </button>
         </div>
-        <h1 class="p-name" id="pName">جاري التحميل...</h1>
-        <div class="p-sub" id="pSub">@username</div>
-        <p class="p-bio" id="pBio"></p>
 
-        <div class="hero-btns">
-            <button class="pill-btn yellow" onclick="openViewer(0)">
-                ▶ عرض الستوري (<span id="totalBadge">0</span>)
+        <h2 id="profileName" class="text-xl font-extrabold mt-3 flex items-center gap-1.5">جاري التحميل...</h2>
+        <p id="profileSub" class="text-xs text-zinc-400 mt-0.5" dir="ltr">@username</p>
+        <p id="profileBio" class="text-sm text-zinc-200 mt-2.5 max-w-xs leading-relaxed"></p>
+
+        <!-- أزرار التحكم السريعة -->
+        <div class="flex items-center gap-2.5 mt-4 w-full justify-center">
+            <button onclick="openStoryViewer(0)" class="bg-[#FFFC00] text-black font-bold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-yellow-400/10 active:scale-95 transition">
+                <i class="fa-solid fa-play"></i> تشغيل الستوري (<span id="activeCountBadge">0</span>)
             </button>
-            <button class="pill-btn" id="selectBtn" onclick="toggleSelectMode()">
-                ☑ تحديد ودمج
+            <button id="selectModeBtn" onclick="toggleSelectMode()" class="bg-zinc-800 text-zinc-200 font-bold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 border border-white/10 active:scale-95 transition">
+                <i class="fa-regular fa-square-check"></i> تحديد ودمج
             </button>
-            <button class="pill-btn" onclick="copyLink()">🔗 نسخ الرابط</button>
+            <button onclick="copyProfileLink()" class="w-9 h-9 rounded-full bg-zinc-800 text-zinc-300 flex items-center justify-center border border-white/10 active:scale-90 transition">
+                <i class="fa-solid fa-link text-xs"></i>
+            </button>
         </div>
     </section>
 
-    <div class="tabs">
-        <button class="tab-btn active" id="tab-all" onclick="setTab('all')">الكل</button>
-        <button class="tab-btn" id="tab-stories" onclick="setTab('stories')">الستوري الحالي</button>
-        <button class="tab-btn" id="tab-highlights" onclick="setTab('highlights')">القديمة</button>
-        <button class="tab-btn" id="tab-spotlight" onclick="setTab('spotlight')">سبوت لايت</button>
+    <!-- التبويبات (All / Stories / Archive / Spotlight) -->
+    <div class="flex border-b border-white/10 bg-[#09090b] sticky top-[61px] z-20 text-xs font-bold text-zinc-400">
+        <button onclick="switchTab('all')" id="tab-all" class="flex-1 py-3.5 text-center tab-active transition">الكل</button>
+        <button onclick="switchTab('stories')" id="tab-stories" class="flex-1 py-3.5 text-center transition">الستوري الحالي</button>
+        <button onclick="switchTab('highlights')" id="tab-highlights" class="flex-1 py-3.5 text-center transition">القديمة (الأرشيف)</button>
+        <button onclick="switchTab('spotlight')" id="tab-spotlight" class="flex-1 py-3.5 text-center transition">سبوت لايت</button>
     </div>
 
-    <div class="toolbar">
-        <div>
-            الترتيب:
-            <select id="sortOrder" onchange="renderGrid()">
-                <option value="new">الأحدث أولاً</option>
-                <option value="old">الأقدم أولاً</option>
+    <!-- شريط الفرز وعدد العناصر -->
+    <div class="px-4 py-3 flex items-center justify-between text-xs text-zinc-400">
+        <div class="flex items-center gap-2">
+            <span>الترتيب:</span>
+            <select id="sortSelect" onchange="renderMediaGrid()" class="bg-zinc-900 text-zinc-200 px-2.5 py-1 rounded-lg border border-white/10 focus:outline-none">
+                <option value="newest">الأحدث أولاً</option>
+                <option value="oldest">الأقدم أولاً</option>
             </select>
         </div>
-        <button id="selectAllBtn" onclick="selectAll()" style="display:none;background:none;border:none;color:var(--yellow);font-weight:bold;cursor:pointer;">
+        <button onclick="selectAllVisible()" id="selectAllBtn" class="hidden text-[#FFFC00] font-bold">
             تحديد الكل
         </button>
     </div>
 
-    <div id="loader" class="loader">⏳ جاري سحب السنابات والوسائط بأعلى دقة...</div>
-    <main class="grid" id="mediaGrid"></main>
+    <!-- حالة التحميل -->
+    <div id="loadingState" class="py-16 flex flex-col items-center justify-center text-center px-6">
+        <div class="w-10 h-10 border-3 border-[#FFFC00] border-t-transparent rounded-full animate-spin mb-3"></div>
+        <p class="text-sm font-bold text-zinc-300">جاري سحب السنابات من الخادم...</p>
+        <p class="text-xs text-zinc-500 mt-1">يتم استخراج الفيديوهات والصور بأعلى جودة متاحة</p>
+    </div>
 
-    <!-- الشريط السفلي للدمج -->
-    <div class="merge-bar" id="mergeBar">
+    <!-- شبكة عرض السنابات -->
+    <main id="mediaGrid" class="px-4 grid grid-cols-2 gap-3">
+        <!-- يتم تعبئة البطاقات هنا -->
+    </main>
+
+    <!-- الشريط السفلي العائم لدمج وحفظ السنابات المحددة -->
+    <div id="mergeActionBar" class="fixed bottom-4 inset-x-4 max-w-md mx-auto z-40 glass-bar border border-[#FFFC00]/40 rounded-2xl p-3.5 shadow-2xl hidden items-center justify-between">
         <div>
-            <div style="font-size:12px;font-weight:800;">تم تحديد <span id="selCount" style="color:var(--yellow);">0</span> سنابات</div>
-            <div id="mergeStatus" style="font-size:10px;color:var(--muted);">دمج المقاطع في فيديو واحد</div>
+            <p class="text-xs font-bold text-white">تم تحديد <span id="selectedCount" class="text-[#FFFC00]">0</span> سنابات</p>
+            <p id="mergeStatusText" class="text-[10px] text-zinc-400">جاهز للدمج في مقطع فيديو واحد</p>
         </div>
-        <div style="display:flex;gap:6px;">
-            <button class="pill-btn" style="padding:8px 10px;font-size:11px;" onclick="downloadSelectedSeparate()">حفظ منفصل</button>
-            <button class="pill-btn yellow" id="mergeExecBtn" style="padding:8px 12px;font-size:11px;" onclick="mergeSelectedVideos()">🎬 دمج في فيديو واحد</button>
+        <div class="flex items-center gap-2">
+            <button onclick="downloadSelectedIndividually()" class="bg-zinc-800 text-zinc-200 text-xs font-bold px-3 py-2.5 rounded-xl border border-white/10 active:scale-95">
+                حفظ منفصل
+            </button>
+            <button id="mergeBtn" onclick="mergeAndSaveSelected()" class="bg-[#FFFC00] text-black text-xs font-extrabold px-4 py-2.5 rounded-xl shadow-lg shadow-yellow-400/20 flex items-center gap-1.5 active:scale-95">
+                <i class="fa-solid fa-film"></i> دمج وحفظ كفيديو واحد
+            </button>
         </div>
     </div>
 
-    <!-- مشغل الستوري -->
-    <div class="viewer-modal" id="viewerModal">
-        <div class="viewer-top">
-            <div class="progress-row" id="progRow"></div>
-            <div class="viewer-header">
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <img id="vAvatar" src="" style="width:34px;height:34px;border-radius:50%;border:1.5px solid var(--yellow);">
+    <!-- عارض الستوري بملء الشاشة (Full-screen Story Player) -->
+    <div id="storyPlayerModal" class="fixed inset-0 z-50 bg-black hidden flex-col justify-between">
+        <!-- أشرطة التقدم العلوية -->
+        <div class="p-3 pt-6 bg-gradient-to-b from-black/80 to-transparent z-10">
+            <div id="playerProgressBars" class="flex gap-1 mb-3"></div>
+            <div class="flex items-center justify-between px-1">
+                <div class="flex items-center gap-2.5">
+                    <img id="playerAvatar" src="" class="w-9 h-9 rounded-full object-cover border border-[#FFFC00]">
                     <div>
-                        <div id="vName" style="font-size:12px;font-weight:800;"></div>
-                        <div id="vTitle" style="font-size:10px;color:#ccc;"></div>
+                        <h4 id="playerName" class="text-xs font-bold text-white"></h4>
+                        <p id="playerTime" class="text-[10px] text-zinc-300"></p>
                     </div>
                 </div>
-                <div style="display:flex;gap:8px;">
-                    <button class="nav-btn" onclick="downloadCurrentInViewer()">⬇</button>
-                    <button class="nav-btn" onclick="closeViewer()">✕</button>
+                <div class="flex items-center gap-3">
+                    <button onclick="downloadCurrentStoryItem()" class="w-9 h-9 rounded-full bg-white/15 backdrop-blur-md text-white flex items-center justify-center active:scale-90">
+                        <i class="fa-solid fa-download text-sm"></i>
+                    </button>
+                    <button onclick="closeStoryViewer()" class="w-9 h-9 rounded-full bg-white/15 backdrop-blur-md text-white flex items-center justify-center active:scale-90">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
                 </div>
             </div>
         </div>
-        <div class="viewer-stage">
-            <video id="vVideo" playsinline webkit-playsinline style="display:none;"></video>
-            <img id="vImg" src="" style="display:none;">
-            <div class="tap-right" onclick="prevSnap()"></div>
-            <div class="tap-left" onclick="nextSnap()"></div>
+
+        <!-- منطقة الفيديو أو الصورة -->
+        <div class="flex-1 relative flex items-center justify-center overflow-hidden bg-zinc-950">
+            <video id="playerVideo" playsinline webkit-playsinline class="max-h-full max-w-full object-contain hidden"></video>
+            <img id="playerImage" src="" class="max-h-full max-w-full object-contain hidden">
+            
+            <!-- مناطق النقر للتنقل يمين ويسار مثل السناب -->
+            <div onclick="prevStory()" class="absolute inset-y-0 right-0 w-1/3 z-10"></div>
+            <div onclick="nextStory()" class="absolute inset-y-0 left-0 w-2/3 z-10"></div>
         </div>
     </div>
 
-    <canvas id="mergeCanvas" width="720" height="1280" style="display:none;"></canvas>
+    <!-- كانفاس مخفي لدمج الفيديوهات في المتصفح -->
+    <canvas id="mergerCanvas" width="720" height="1280" class="hidden"></canvas>
 
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const username = (params.get('user') || 'najla_ali33').replace('@', '');
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentUsername = (urlParams.get('user') || 'najla_ali33').replace('@', '');
 
-        let allItems = [];
-        let viewItems = [];
-        let activeTab = 'all';
-        let selectMode = false;
-        let selectedSet = new Set();
-        let currentIdx = 0;
-        let imgTimer = null;
+        let allMediaItems = [];
+        let filteredItems = [];
+        let currentTab = 'all';
+        let isSelectMode = false;
+        let selectedIds = new Set();
+        let currentStoryIndex = 0;
+        let imageStoryTimer = null;
 
-        const snapcodeFallback = `https://app.snapchat.com/web/deeplink/snapcode?username=${encodeURIComponent(username)}&type=SVG&bitmoji=enable`;
-        document.getElementById('navUsername').innerText = `@${username}`;
-        document.getElementById('pSub').innerText = `@${username}`;
-        document.getElementById('pAvatar').src = snapcodeFallback;
-        document.getElementById('vAvatar').src = snapcodeFallback;
+        document.getElementById('navUsername').innerText = `@${currentUsername}`;
+        document.getElementById('profileSub').innerText = `@${currentUsername}`;
 
-        async function loadProfile() {
-            document.getElementById('loader').style.display = 'block';
+        async function loadUserProfile() {
+            document.getElementById('loadingState').classList.remove('hidden');
             document.getElementById('mediaGrid').innerHTML = '';
-            allItems = [];
+            allMediaItems = [];
 
-            const target = `https://www.snapchat.com/@${username}`;
+            const targetUrl = `https://www.snapchat.com/@${currentUsername}`;
             const proxies = [
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`,
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
-                `https://corsproxy.io/?${encodeURIComponent(target)}`
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
             ];
 
-            let ok = false;
+            let loadedSuccessfully = false;
+
             for (const proxy of proxies) {
                 try {
                     const res = await fetch(proxy);
                     if (!res.ok) continue;
                     const html = await res.text();
-                    const doc = new DOMParser().parseFromString(html, 'text/html');
-                    const nextEl = doc.getElementById('__NEXT_DATA__');
-                    if (nextEl) {
-                        extractSnapData(JSON.parse(nextEl.textContent));
-                        ok = true;
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const nextDataScript = doc.getElementById('__NEXT_DATA__');
+
+                    if (nextDataScript) {
+                        const data = JSON.parse(nextDataScript.textContent);
+                        parseSnapchatNextData(data);
+                        loadedSuccessfully = true;
                         break;
                     }
-                } catch (e) {}
+                } catch (err) {
+                    console.warn('Proxy attempt failed:', err);
+                }
             }
 
-            if (!ok || allItems.length === 0) {
-                loadDemoFallback();
+            // في حال حظر سناب للبروكسي أو كان الحساب لا يملك سنابات نشطة حالياً، نعرض بيانات تجريبية تحاكي الصورة عشان تقدر تجرب الدمج والتحميل فوراً
+            if (!loadedSuccessfully || allMediaItems.length === 0) {
+                loadFallbackDemoData();
             }
 
-            document.getElementById('loader').style.display = 'none';
-            renderGrid();
+            document.getElementById('loadingState').classList.add('hidden');
+            renderMediaGrid();
         }
 
-        function extractSnapData(json) {
-            const props = json?.props?.pageProps;
+        function parseSnapchatNextData(data) {
+            const props = data?.props?.pageProps;
             if (!props) return;
 
-            const info = props?.userProfile?.publicProfileInfo || props?.publicProfileInfo || {};
-            document.getElementById('pName').innerText = info.title || username;
-            document.getElementById('vName').innerText = info.title || username;
-            document.getElementById('pBio').innerText = info.bio || '';
+            const profile = props?.userProfile?.publicProfileInfo || props?.publicProfileInfo || {};
+            const fallbackSnapcode = `https://app.snapchat.com/web/deeplink/snapcode?username=${currentUsername}&type=SVG&bitmoji=enable`;
 
-            const avatar = info.profilePictureUrl || info.squareHeroImageUrl || snapcodeFallback;
-            document.getElementById('pAvatar').src = avatar;
-            document.getElementById('vAvatar').src = avatar;
+            document.getElementById('profileName').innerText = profile.title || currentUsername;
+            document.getElementById('profileBio').innerText = profile.bio || '';
+            document.getElementById('profileAvatar').src = profile.profilePictureUrl || profile.squareHeroImageUrl || fallbackSnapcode;
+            document.getElementById('playerAvatar').src = document.getElementById('profileAvatar').src;
+            document.getElementById('playerName').innerText = profile.title || currentUsername;
 
-            if (info.subscriberCount) {
-                const k = (Number(info.subscriberCount) / 1000).toFixed(1) + 'K followers';
-                document.getElementById('pSub').innerText = `${username} • ${k}`;
+            if (profile.subscriberCount) {
+                const countFormatted = (Number(profile.subscriberCount) / 1000).toFixed(1) + 'K followers';
+                document.getElementById('profileSub').innerText = `${currentUsername} • ${countFormatted}`;
             }
 
-            // الستوري الحالي
-            const snaps = props?.story?.snapList || [];
-            snaps.forEach((s, i) => {
-                const url = s?.snapUrls?.mediaUrl;
-                const thumb = s?.snapUrls?.mediaPreviewUrl?.value || url;
-                if (url) {
-                    allItems.push({
-                        id: `st_${i}`,
+            // 1. استخراج الستوري الحالي (Active Story)
+            const storySnaps = props?.story?.snapList || [];
+            storySnaps.forEach((snap, idx) => {
+                const mediaUrl = snap?.snapUrls?.mediaUrl;
+                const previewUrl = snap?.snapUrls?.mediaPreviewUrl?.value || mediaUrl;
+                const isVideo = snap?.snapMediaType === 1; // 1 = Video, 0 = Image
+                if (mediaUrl) {
+                    allMediaItems.push({
+                        id: `story_${idx}_${Date.now()}`,
                         category: 'stories',
-                        type: s.snapMediaType === 1 ? 'video' : 'image',
-                        url, thumb,
-                        time: s?.timestampInSec?.value ? Number(s.timestampInSec.value) * 1000 : Date.now() - (i * 60000),
-                        title: `ستوري (${i + 1}/${snaps.length})`
+                        type: isVideo ? 'video' : 'image',
+                        url: mediaUrl,
+                        thumb: previewUrl,
+                        timestamp: snap?.timestampInSec?.value ? Number(snap.timestampInSec.value) * 1000 : Date.now() - (idx * 60000),
+                        title: `ستوري #${idx + 1}`
                     });
                 }
             });
 
-            // القصص المحفوظة (القديمة)
-            const highlights = props?.curatedHighlights || [];
-            highlights.forEach((h, hi) => {
-                const list = h?.snapList || [];
-                const hTitle = h?.storyTitle?.value || `قصة ${hi + 1}`;
-                list.forEach((s, si) => {
-                    const url = s?.snapUrls?.mediaUrl;
-                    const thumb = s?.snapUrls?.mediaPreviewUrl?.value || h?.thumbnailUrl?.value || url;
-                    if (url) {
-                        allItems.push({
-                            id: `hl_${hi}_${si}`,
+            // 2. استخراج القصص المحفوظة / القديمة (Curated Highlights / Lenses / Old Stories)
+            const highlights = props?.curatedHighlights || props?.spotlightHighlights || [];
+            highlights.forEach((hl, hIdx) => {
+                const snapList = hl?.snapList || [];
+                const hlTitle = hl?.storyTitle?.value || `أرشيف ${hIdx + 1}`;
+                snapList.forEach((snap, sIdx) => {
+                    const mediaUrl = snap?.snapUrls?.mediaUrl;
+                    const previewUrl = snap?.snapUrls?.mediaPreviewUrl?.value || hl?.thumbnailUrl?.value || mediaUrl;
+                    const isVideo = snap?.snapMediaType === 1;
+                    if (mediaUrl) {
+                        allMediaItems.push({
+                            id: `hl_${hIdx}_${sIdx}`,
                             category: 'highlights',
-                            type: s.snapMediaType === 1 ? 'video' : 'image',
-                            url, thumb,
-                            time: Date.now() - ((hi + 1) * 86400000),
-                            title: `${hTitle} (${si + 1})`
+                            type: isVideo ? 'video' : 'image',
+                            url: mediaUrl,
+                            thumb: previewUrl,
+                            timestamp: snap?.timestampInSec?.value ? Number(snap.timestampInSec.value) * 1000 : Date.now() - ((hIdx + 1) * 86400000),
+                            title: `${hlTitle} (${sIdx + 1}/${snapList.length})`
                         });
                     }
                 });
             });
 
-            // السبوت لايت
-            const spots = props?.spotlightHighlights || [];
-            spots.forEach((sp, spi) => {
-                (sp?.snapList || []).forEach((s, si) => {
-                    const url = s?.snapUrls?.mediaUrl;
-                    const thumb = s?.snapUrls?.mediaPreviewUrl?.value || url;
-                    if (url) {
-                        allItems.push({
-                            id: `sp_${spi}_${si}`,
+            // 3. استخراج مقاطع السبوت لايت (Spotlight)
+            const spotlights = props?.spotlightHighlights || [];
+            spotlights.forEach((sp, spIdx) => {
+                const snapList = sp?.snapList || [];
+                snapList.forEach((snap, sIdx) => {
+                    const mediaUrl = snap?.snapUrls?.mediaUrl;
+                    const previewUrl = snap?.snapUrls?.mediaPreviewUrl?.value || mediaUrl;
+                    if (mediaUrl) {
+                        allMediaItems.push({
+                            id: `spot_${spIdx}_${sIdx}`,
                             category: 'spotlight',
                             type: 'video',
-                            url, thumb,
-                            time: Date.now() - (spi * 3600000),
-                            title: `سبوت لايت #${spi + 1}`
+                            url: mediaUrl,
+                            thumb: previewUrl,
+                            timestamp: Date.now() - (spIdx * 3600000),
+                            title: `سبوت لايت #${spIdx + 1}`
                         });
                     }
                 });
             });
         }
 
-        function loadDemoFallback() {
-            if (username === 'najla_ali33') {
-                document.getElementById('pName').innerText = 'نجمه 🌟';
-                document.getElementById('pSub').innerText = 'najla_ali33 • 15K followers';
-                document.getElementById('pBio').innerText = 'مال للنجوم أوطان دام السماء عيونك ..💘.';
+        function loadFallbackDemoData() {
+            // بيانات افتراضية مطابقة للصورة في حال عدم توفر استجابة من البروكسي
+            if (currentUsername === 'najla_ali33') {
+                document.getElementById('profileName').innerText = 'نجمه 🌟';
+                document.getElementById('profileSub').innerText = 'najla_ali33 • 15K followers';
+                document.getElementById('profileBio').innerText = 'مال للنجوم أوطان دام السماء عيونك ..💘.';
             } else {
-                document.getElementById('pName').innerText = username;
+                document.getElementById('profileName').innerText = currentUsername;
             }
-            document.getElementById('vName').innerText = document.getElementById('pName').innerText;
 
-            const demoVids = [
+            const fallbackAvatar = `https://app.snapchat.com/web/deeplink/snapcode?username=${currentUsername}&type=SVG&bitmoji=enable`;
+            document.getElementById('profileAvatar').src = fallbackAvatar;
+            document.getElementById('playerAvatar').src = fallbackAvatar;
+            document.getElementById('playerName').innerText = document.getElementById('profileName').innerText;
+
+            // 4 سنابات فيديو مقسمة (كما يظهر في الصورة الثانية Snaps: 4) لتجربة الدمج المباشر
+            const sampleVideos = [
                 'https://assets.mixkit.co/videos/preview/mixkit-POV-walking-down-a-street-at-night-42661-large.mp4',
                 'https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4',
                 'https://assets.mixkit.co/videos/preview/mixkit-city-traffic-at-night-11-large.mp4',
                 'https://assets.mixkit.co/videos/preview/mixkit-tree-branches-in-the-breeze-1188-large.mp4'
             ];
 
-            demoVids.forEach((url, i) => {
-                allItems.push({
+            sampleVideos.forEach((vUrl, i) => {
+                allMediaItems.push({
                     id: `demo_${i}`,
                     category: i < 3 ? 'stories' : 'highlights',
                     type: 'video',
-                    url,
-                    thumb: '',
-                    time: Date.now() - (i * 1200000),
+                    url: vUrl,
+                    thumb: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=500&q=80',
+                    timestamp: Date.now() - (i * 1800000),
                     title: `سناب (${i + 1}/4)`
                 });
             });
         }
 
-        function setTab(t) {
-            activeTab = t;
-            ['all', 'stories', 'highlights', 'spotlight'].forEach(id => {
-                document.getElementById(`tab-${id}`).classList.toggle('active', id === t);
+        function switchTab(tab) {
+            currentTab = tab;
+            ['all', 'stories', 'highlights', 'spotlight'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if (t === tab) el.classList.add('tab-active');
+                else el.classList.remove('tab-active');
             });
-            renderGrid();
+            renderMediaGrid();
         }
 
-        function renderGrid() {
+        function renderMediaGrid() {
             const grid = document.getElementById('mediaGrid');
-            const sort = document.getElementById('sortOrder').value;
-            document.getElementById('totalBadge').innerText = allItems.length;
+            const sortOrder = document.getElementById('sortSelect').value;
 
-            viewItems = allItems.filter(it => activeTab === 'all' || it.category === activeTab);
-            viewItems.sort((a, b) => sort === 'new' ? b.time - a.time : a.time - b.time);
+            document.getElementById('activeCountBadge').innerText = allMediaItems.length;
+
+            filteredItems = allMediaItems.filter(item => {
+                if (currentTab === 'all') return true;
+                return item.category === currentTab;
+            });
+
+            filteredItems.sort((a, b) => sortOrder === 'newest' ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
 
             grid.innerHTML = '';
-            if (viewItems.length === 0) {
-                grid.innerHTML = `<div style="grid-column:span 2;text-align:center;padding:40px;color:var(--muted);">لا توجد سنابات في هذا القسم</div>`;
+
+            if (filteredItems.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-2 py-12 text-center text-zinc-500 text-xs">
+                        لا توجد سنابات في هذا القسم حالياً
+                    </div>
+                `;
                 return;
             }
 
-            viewItems.forEach((it, idx) => {
-                const isSel = selectedSet.has(it.id);
+            filteredItems.forEach((item, index) => {
+                const isSelected = selectedIds.has(item.id);
                 const card = document.createElement('div');
-                card.className = `snap-card ${isSel ? 'selected' : ''}`;
-                card.onclick = () => selectMode ? toggleItem(it.id) : openViewer(idx);
+                card.className = `relative aspect-[9/16] rounded-2xl overflow-hidden bg-zinc-900 border border-white/10 group cursor-pointer transition duration-200 ${isSelected ? 'ring-2 ring-[#FFFC00] scale-[0.97]' : ''}`;
+                
+                card.onclick = () => {
+                    if (isSelectMode) {
+                        toggleSelectItem(item.id);
+                    } else {
+                        openStoryViewer(index);
+                    }
+                };
 
                 card.innerHTML = `
-                    ${it.type === 'video' 
-                        ? `<video src="${it.url}#t=0.1" muted playsinline preload="metadata"></video>`
-                        : `<img src="${it.url}" alt="snap">`
-                    }
-                    <div class="card-overlay">
-                        <div class="card-top">
-                            <span class="snap-tag">${it.title}</span>
-                            ${selectMode ? `<div class="check-circle">✓</div>` : `<span class="snap-tag">${it.type === 'video' ? '🎥' : '📷'}</span>`}
-                        </div>
-                        <div class="card-bottom">
-                            <button class="view-btn" onclick="event.stopPropagation(); openViewer(${idx})">👁 عرض</button>
-                            <button class="dl-btn" onclick="event.stopPropagation(); downloadFile('${it.url}', '${username}_${it.id}.${it.type === 'video' ? 'mp4' : 'jpg'}')">⬇</button>
-                        </div>
+                    <video src="${item.url}#t=0.1" preload="metadata" muted playsinline class="w-full h-full object-cover pointer-events-none"></video>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40"></div>
+                    
+                    <!-- شارة العنوان والنوع -->
+                    <div class="absolute top-2.5 right-2.5 left-2.5 flex justify-between items-center">
+                        <span class="bg-black/70 backdrop-blur-md text-[10px] font-bold px-2 py-1 rounded-md text-white">
+                            ${item.title}
+                        </span>
+                        ${isSelectMode ? `
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center ${isSelected ? 'bg-[#FFFC00] text-black' : 'bg-black/60 border border-white/40 text-transparent'}">
+                                <i class="fa-solid fa-check text-xs"></i>
+                            </div>
+                        ` : `
+                            <span class="w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center text-[10px]">
+                                <i class="fa-solid ${item.type === 'video' ? 'fa-video' : 'fa-image'}"></i>
+                            </span>
+                        `}
+                    </div>
+
+                    <!-- أزرار المعاينة والتحميل المباشر (مستوحاة من StoryGrab) -->
+                    <div class="absolute bottom-2.5 inset-x-2.5 flex gap-1.5">
+                        <button onclick="event.stopPropagation(); openStoryViewer(${index})" 
+                            class="flex-1 bg-sky-500 hover:bg-sky-400 text-white font-bold text-[11px] py-2 rounded-xl flex items-center justify-center gap-1 shadow-md active:scale-95 transition">
+                            <i class="fa-solid fa-eye"></i> عرض
+                        </button>
+                        <button onclick="event.stopPropagation(); downloadSingleMedia('${item.url}', '${item.id}.${item.type === 'video' ? 'mp4' : 'jpg'}')" 
+                            class="w-9 bg-zinc-800/90 hover:bg-[#FFFC00] hover:text-black text-white rounded-xl flex items-center justify-center active:scale-95 transition">
+                            <i class="fa-solid fa-download text-xs"></i>
+                        </button>
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
+        // ====== نظام التحديد ودمج الفيديوهات في فيديو واحد ======
         function toggleSelectMode() {
-            selectMode = !selectMode;
-            selectedSet.clear();
-            const btn = document.getElementById('selectBtn');
-            document.getElementById('selectAllBtn').style.display = selectMode ? 'inline' : 'none';
+            isSelectMode = !isSelectMode;
+            selectedIds.clear();
+            const btn = document.getElementById('selectModeBtn');
+            const selectAllBtn = document.getElementById('selectAllBtn');
 
-            if (selectMode) {
-                btn.classList.add('yellow');
-                btn.innerText = '✕ إلغاء التحديد';
+            if (isSelectMode) {
+                btn.className = 'bg-[#FFFC00] text-black font-bold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 active:scale-95 transition';
+                btn.innerHTML = '<i class="fa-solid fa-xmark"></i> إلغاء التحديد';
+                selectAllBtn.classList.remove('hidden');
             } else {
-                btn.classList.remove('yellow');
-                btn.innerText = '☑ تحديد ودمج';
+                btn.className = 'bg-zinc-800 text-zinc-200 font-bold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 border border-white/10 active:scale-95 transition';
+                btn.innerHTML = '<i class="fa-regular fa-square-check"></i> تحديد ودمج';
+                selectAllBtn.classList.add('hidden');
             }
             updateMergeBar();
-            renderGrid();
+            renderMediaGrid();
         }
 
-        function toggleItem(id) {
-            if (selectedSet.has(id)) selectedSet.delete(id);
-            else selectedSet.add(id);
+        function toggleSelectItem(id) {
+            if (selectedIds.has(id)) selectedIds.delete(id);
+            else selectedIds.add(id);
             updateMergeBar();
-            renderGrid();
+            renderMediaGrid();
         }
 
-        function selectAll() {
-            viewItems.forEach(it => selectedSet.add(it.id));
+        function selectAllVisible() {
+            filteredItems.forEach(item => selectedIds.add(item.id));
             updateMergeBar();
-            renderGrid();
+            renderMediaGrid();
         }
 
         function updateMergeBar() {
-            document.getElementById('selCount').innerText = selectedSet.size;
-            document.getElementById('mergeBar').classList.toggle('active', selectMode && selectedSet.size > 0);
+            const bar = document.getElementById('mergeActionBar');
+            document.getElementById('selectedCount').innerText = selectedIds.size;
+            if (isSelectMode && selectedIds.size > 0) {
+                bar.classList.remove('hidden');
+                bar.classList.add('flex');
+            } else {
+                bar.classList.add('hidden');
+                bar.classList.remove('flex');
+            }
         }
 
-        // دمج السنابات المحددة في فيديو واحد
-        async function mergeSelectedVideos() {
-            const list = viewItems.filter(it => selectedSet.has(it.id));
-            if (!list.length) return;
+        // دمج السنابات المحددة في ملف فيديو واحد باستخدام Canvas + MediaRecorder
+        async function mergeAndSaveSelected() {
+            const selectedItems = filteredItems.filter(item => selectedIds.has(item.id));
+            if (selectedItems.length === 0) return;
 
-            const btn = document.getElementById('mergeExecBtn');
-            const status = document.getElementById('mergeStatus');
-            btn.disabled = true;
+            const mergeBtn = document.getElementById('mergeBtn');
+            const statusText = document.getElementById('mergeStatusText');
+            mergeBtn.disabled = true;
 
             try {
-                const canvas = document.getElementById('mergeCanvas');
+                const canvas = document.getElementById('mergerCanvas');
                 const ctx = canvas.getContext('2d');
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const dest = audioCtx.createMediaStreamDestination();
 
-                const stream = new MediaStream([
-                    ...canvas.captureStream(30).getVideoTracks(),
+                const canvasStream = canvas.captureStream(30);
+                const combinedStream = new MediaStream([
+                    ...canvasStream.getVideoTracks(),
                     ...dest.stream.getAudioTracks()
                 ]);
 
-                const mime = ['video/mp4', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m)) || '';
-                const recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
+                // اختيار الصيغة الأنسب للآيفون (mp4) أو المتصفحات الأخرى (webm)
+                const mimeTypes = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm'];
+                const supportedMime = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || '';
+                const recorder = new MediaRecorder(combinedStream, supportedMime ? { mimeType: supportedMime } : {});
+                
                 const chunks = [];
                 recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
-                const stopPromise = new Promise(r => recorder.onstop = r);
 
+                const recordingStopped = new Promise(resolve => { recorder.onstop = resolve; });
                 recorder.start();
 
-                for (let i = 0; i < list.length; i++) {
-                    status.innerText = `جاري دمج المقطع (${i + 1} من ${list.length})...`;
-                    btn.innerText = `⏳ (${i + 1}/${list.length})`;
-                    await drawClipOnCanvas(list[i], canvas, ctx, audioCtx, dest);
+                for (let i = 0; i < selectedItems.length; i++) {
+                    const item = selectedItems[i];
+                    statusText.innerText = `جاري دمج السناب (${i + 1} من ${selectedItems.length})...`;
+                    mergeBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> (${i + 1}/${selectedItems.length})`;
+
+                    await playAndDrawItemToCanvas(item, canvas, ctx, audioCtx, dest);
                 }
 
                 recorder.stop();
-                await stopPromise;
+                await recordingStopped;
 
-                const ext = mime.includes('mp4') ? 'mp4' : 'webm';
-                const blob = new Blob(chunks, { type: mime || 'video/mp4' });
-                await shareOrDownloadBlob(blob, `${username}_merged_${Date.now()}.${ext}`);
+                const ext = supportedMime.includes('mp4') ? 'mp4' : 'webm';
+                const finalBlob = new Blob(chunks, { type: supportedMime || 'video/mp4' });
+                const fileName = `${currentUsername}_merged_${Date.now()}.${ext}`;
+
+                statusText.innerText = 'اكتمل الدمج! جاري الحفظ...';
+                await saveOrShareBlob(finalBlob, fileName);
 
             } catch (err) {
-                alert('سيتم حفظ المقاطع تباعاً بسبب حماية المصدر.');
-                downloadSelectedSeparate();
+                console.error(err);
+                alert('تعذر الدمج المباشر بسبب قيود CORS على أحد المقاطع، سيتم حفظها لك بشكل متتالي.');
+                downloadSelectedIndividually();
             } finally {
-                btn.disabled = false;
-                btn.innerText = '🎬 دمج في فيديو واحد';
-                status.innerText = 'دمج المقاطع في فيديو واحد';
+                mergeBtn.disabled = false;
+                mergeBtn.innerHTML = '<i class="fa-solid fa-film"></i> دمج وحفظ كفيديو واحد';
+                statusText.innerText = 'جاهز للدمج في مقطع فيديو واحد';
             }
         }
 
-        function drawClipOnCanvas(item, canvas, ctx, audioCtx, dest) {
-            return new Promise(resolve => {
-                const video = document.createElement('video');
-                video.crossOrigin = 'anonymous';
-                video.playsInline = true;
-                video.src = `https://corsproxy.io/?${encodeURIComponent(item.url)}`;
+        function playAndDrawItemToCanvas(item, canvas, ctx, audioCtx, dest) {
+            return new Promise((resolve) => {
+                if (item.type === 'image') {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        let elapsed = 0;
+                        const interval = setInterval(() => {
+                            ctx.fillStyle = '#000';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            elapsed += 33;
+                            if (elapsed >= 3000) { clearInterval(interval); resolve(); }
+                        }, 33);
+                    };
+                    img.onerror = () => resolve();
+                    img.src = `https://corsproxy.io/?${encodeURIComponent(item.url)}`;
+                } else {
+                    const video = document.createElement('video');
+                    video.crossOrigin = 'anonymous';
+                    video.playsInline = true;
+                    video.src = `https://corsproxy.io/?${encodeURIComponent(item.url)}`;
 
-                video.onloadedmetadata = () => {
-                    try {
-                        const src = audioCtx.createMediaElementSource(video);
-                        src.connect(dest);
-                    } catch (e) {}
-                    video.play().catch(() => resolve());
-                };
+                    video.onloadedmetadata = () => {
+                        try {
+                            const source = audioCtx.createMediaElementSource(video);
+                            source.connect(dest);
+                        } catch (e) {}
+                        video.play().catch(() => resolve());
+                    };
 
-                const loop = () => {
-                    if (!video.paused && !video.ended) {
-                        ctx.fillStyle = '#000';
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        requestAnimationFrame(loop);
-                    }
-                };
-                video.onplay = () => loop();
-                video.onended = () => resolve();
-                video.onerror = () => resolve();
+                    const drawFrame = () => {
+                        if (!video.paused && !video.ended) {
+                            ctx.fillStyle = '#000';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            requestAnimationFrame(drawFrame);
+                        }
+                    };
+
+                    video.onplay = () => drawFrame();
+                    video.onended = () => resolve();
+                    video.onerror = () => resolve();
+                }
             });
         }
 
-        async function shareOrDownloadBlob(blob, filename) {
-            const file = new File([blob], filename, { type: blob.type });
+        // ====== التحميل والمشاركة المباشرة لألبوم الآيفون ======
+        async function saveOrShareBlob(blob, fileName) {
+            const file = new File([blob], fileName, { type: blob.type });
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
-                    await navigator.share({ files: [file], title: filename });
+                    await navigator.share({
+                        files: [file],
+                        title: 'حفظ من SnapVault'
+                    });
                     return;
                 } catch (e) {}
             }
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = filename;
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
             a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
         }
 
-        async function downloadFile(url, filename) {
+        async function downloadSingleMedia(url, fileName) {
             try {
-                const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                const res = await fetch(proxyUrl);
                 const blob = await res.blob();
-                await shareOrDownloadBlob(blob, filename);
+                await saveOrShareBlob(blob, fileName);
             } catch (e) {
                 window.open(url, '_blank');
             }
         }
 
-        async function downloadSelectedSeparate() {
-            const list = viewItems.filter(it => selectedSet.has(it.id));
-            for (const it of list) {
-                await downloadFile(it.url, `${username}_${it.id}.mp4`);
+        async function downloadSelectedIndividually() {
+            const selectedItems = filteredItems.filter(item => selectedIds.has(item.id));
+            for (const item of selectedItems) {
+                await downloadSingleMedia(item.url, `${currentUsername}_${item.id}.mp4`);
             }
         }
 
         function downloadAvatar() {
-            downloadFile(document.getElementById('pAvatar').src, `${username}_avatar.jpg`);
+            const avatarUrl = document.getElementById('profileAvatar').src;
+            downloadSingleMedia(avatarUrl, `${currentUsername}_avatar.jpg`);
         }
 
-        // مشغل الستوري
-        function openViewer(idx) {
-            if (!viewItems.length) return;
-            document.getElementById('viewerModal').classList.add('active');
-            playStoryAt(idx);
+        // ====== مشغل الستوري الكامل ======
+        function openStoryViewer(index) {
+            if (filteredItems.length === 0) return;
+            currentStoryIndex = index;
+            const modal = document.getElementById('storyPlayerModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            showStoryAtIndex(currentStoryIndex);
         }
 
-        function playStoryAt(idx) {
-            clearTimeout(imgTimer);
-            const v = document.getElementById('vVideo');
-            const img = document.getElementById('vImg');
-            v.pause();
+        function showStoryAtIndex(index) {
+            clearTimeout(imageStoryTimer);
+            const videoEl = document.getElementById('playerVideo');
+            const imageEl = document.getElementById('playerImage');
+            videoEl.pause();
 
-            if (idx < 0) idx = 0;
-            if (idx >= viewItems.length) { closeViewer(); return; }
-            currentIdx = idx;
-            const item = viewItems[idx];
+            if (index < 0) index = 0;
+            if (index >= filteredItems.length) {
+                closeStoryViewer();
+                return;
+            }
+            currentStoryIndex = index;
+            const item = filteredItems[index];
 
-            document.getElementById('vTitle').innerText = item.title;
-            document.getElementById('progRow').innerHTML = viewItems.map((_, i) => `
-                <div class="prog-bg"><div class="prog-fill" style="width:${i <= idx ? '100%' : '0%'}"></div></div>
+            // تحديث أشرطة التقدم
+            const barsContainer = document.getElementById('playerProgressBars');
+            barsContainer.innerHTML = filteredItems.map((_, i) => `
+                <div class="h-1 flex-1 rounded-full bg-white/25 overflow-hidden">
+                    <div class="h-full bg-[#FFFC00] transition-all duration-300" style="width: ${i <= index ? '100%' : '0%'}"></div>
+                </div>
             `).join('');
 
+            document.getElementById('playerTime').innerText = item.title;
+
             if (item.type === 'video') {
-                img.style.display = 'none';
-                v.style.display = 'block';
-                v.src = item.url;
-                v.play().catch(() => {});
-                v.onended = () => nextSnap();
+                imageEl.classList.add('hidden');
+                videoEl.classList.remove('hidden');
+                videoEl.src = item.url;
+                videoEl.play().catch(() => {});
+                videoEl.onended = () => nextStory();
             } else {
-                v.style.display = 'none';
-                img.style.display = 'block';
-                img.src = item.url;
-                imgTimer = setTimeout(() => nextSnap(), 4000);
+                videoEl.classList.add('hidden');
+                imageEl.classList.remove('hidden');
+                imageEl.src = item.url;
+                imageStoryTimer = setTimeout(() => nextStory(), 4000);
             }
         }
 
-        function nextSnap() { playStoryAt(currentIdx + 1); }
-        function prevSnap() { playStoryAt(currentIdx - 1); }
+        function nextStory() { showStoryAtIndex(currentStoryIndex + 1); }
+        function prevStory() { showStoryAtIndex(currentStoryIndex - 1); }
 
-        function closeViewer() {
-            clearTimeout(imgTimer);
-            const v = document.getElementById('vVideo');
-            v.pause();
-            v.src = '';
-            document.getElementById('viewerModal').classList.remove('active');
+        function closeStoryViewer() {
+            clearTimeout(imageStoryTimer);
+            const videoEl = document.getElementById('playerVideo');
+            videoEl.pause();
+            videoEl.src = '';
+            const modal = document.getElementById('storyPlayerModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
-        function downloadCurrentInViewer() {
-            const it = viewItems[currentIdx];
-            if (it) downloadFile(it.url, `${username}_${it.id}.mp4`);
+        function downloadCurrentStoryItem() {
+            const item = filteredItems[currentStoryIndex];
+            if (item) downloadSingleMedia(item.url, `${currentUsername}_${item.id}.mp4`);
         }
 
-        function copyLink() {
-            navigator.clipboard.writeText(`https://www.snapchat.com/@${username}`);
-            alert('تم نسخ رابط الحساب!');
+        function copyProfileLink() {
+            navigator.clipboard.writeText(`https://www.snapchat.com/@${currentUsername}`);
+            alert('تم نسخ رابط حساب السناب!');
         }
 
-        loadProfile();
+        function refreshProfile() {
+            const icon = document.getElementById('refreshIcon');
+            icon.classList.add('animate-spin');
+            loadUserProfile().finally(() => setTimeout(() => icon.classList.remove('animate-spin'), 600));
+        }
+
+        // بدء التشغيل
+        loadUserProfile();
     </script>
 </body>
 </html>
