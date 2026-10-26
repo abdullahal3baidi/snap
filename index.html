@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SnapVault</title>
     
-    <!-- إعدادات تطبيق الآيفون PWA -->
+    <!-- إعدادات تطبيق الآيفون PWA الكاملة لمنع ظهور أشرطة سفاري -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SnapVault">
     <meta name="theme-color" content="#000000">
@@ -23,6 +24,7 @@
             color: #ffffff;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            -webkit-user-select: none;
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
         }
@@ -46,7 +48,7 @@
             </div>
             <div>
                 <h1 class="text-xl font-extrabold tracking-tight">Snap<span class="text-[#FFFC00]">Vault</span></h1>
-                <p class="text-[11px] text-zinc-400">تصفح فوري كأنك داخل السناب</p>
+                <p class="text-[11px] text-zinc-400">تصفح فوري بشاشة كاملة</p>
             </div>
         </div>
         <button onclick="toggleAddModal()" class="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-white active:scale-90 transition">
@@ -57,7 +59,6 @@
     <!-- المحتوى -->
     <main class="flex-1 p-4 space-y-4">
         
-        <!-- فتح سريع -->
         <div class="card-glass rounded-2xl p-1.5 flex items-center gap-2">
             <i class="fa-solid fa-bolt text-[#FFFC00] mr-3 text-sm"></i>
             <input type="text" id="quickUser" placeholder="اكتب يوزر السناب للفتح السريع..." 
@@ -72,7 +73,6 @@
             <span id="accountCount" class="text-xs font-bold text-[#FFFC00]">0</span>
         </div>
 
-        <!-- قائمة الحسابات -->
         <div id="accountsGrid" class="space-y-2.5"></div>
 
     </main>
@@ -92,11 +92,38 @@
         </div>
     </div>
 
+    <!-- إطار عرض داخلي بشاشة كاملة 100% لمنع سفاري الآيفون من فتح نافذة منبثقة -->
+    <div id="pwaAppFrameContainer" class="fixed inset-0 z-[9999] bg-black hidden">
+        <iframe id="pwaAppFrame" class="w-full h-full border-0" allow="autoplay; fullscreen; clipboard-write; web-share"></iframe>
+    </div>
+
     <footer class="p-4 text-center text-[11px] text-zinc-500 border-t border-white/5">
         للتثبيت كتطبيق آيفون: اضغط مشاركة <i class="fa-solid fa-arrow-up-from-bracket mx-1 text-zinc-300"></i> ثم <b>إضافة إلى الشاشة الرئيسية</b>
     </footer>
 
     <script>
+        // حقن ملف Manifest ديناميكياً لتعريف الآيفون أن نطاق الموقع بالكامل تطبيق واحد
+        (function injectManifest() {
+            const manifest = {
+                name: "SnapVault",
+                short_name: "SnapVault",
+                start_url: "./index.html",
+                scope: "./",
+                display: "standalone",
+                background_color: "#000000",
+                theme_color: "#000000",
+                icons: [{
+                    src: "https://upload.wikimedia.org/wikipedia/en/thumb/c/c4/Snapchat_logo.svg/512px-Snapchat_logo.svg.png",
+                    sizes: "512x512",
+                    type: "image/png"
+                }]
+            };
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+            document.head.appendChild(link);
+        })();
+
         const defaultAccounts = [
             { username: 'najla_ali33', name: 'نجمه 🌟', bio: 'مال للنجوم أوطان دام السماء عيونك ..💘.', avatar: '' },
             { username: 'ra.mq5', name: 'Raghad', bio: 'حساب سناب شات عام', avatar: '' },
@@ -116,22 +143,23 @@
             grid.innerHTML = '';
 
             accounts.forEach((acc, index) => {
-                const fallbackAvatar = `https://app.snapchat.com/web/deeplink/snapcode?username=${acc.username}&type=SVG&bitmoji=enable`;
+                const cleanUser = acc.username.toLowerCase().trim();
+                const fallbackAvatar = `https://app.snapchat.com/web/deeplink/snapcode?username=${cleanUser}&type=SVG&bitmoji=enable`;
                 const avatarSrc = acc.avatar || fallbackAvatar;
 
                 const card = document.createElement('div');
                 card.className = 'card-glass rounded-2xl p-3 flex items-center justify-between active:scale-[0.98] transition cursor-pointer';
-                card.onclick = () => goToUser(acc.username);
+                card.onclick = () => goToUser(cleanUser);
                 card.innerHTML = `
                     <div class="flex items-center gap-3.5 flex-1 min-w-0">
                         <div class="snap-ring rounded-full shrink-0">
-                            <img id="avatar-${acc.username}" src="${avatarSrc}" onerror="this.src='${fallbackAvatar}'" 
+                            <img id="avatar-${cleanUser}" src="${avatarSrc}" onerror="this.src='${fallbackAvatar}'" 
                                 class="w-14 h-14 rounded-full object-cover bg-zinc-900 border-2 border-black">
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h3 id="name-${acc.username}" class="font-extrabold text-base text-white truncate">${acc.name || acc.username}</h3>
-                            <p class="text-xs text-[#FFFC00] font-mono truncate" dir="ltr">@${acc.username}</p>
-                            <p id="bio-${acc.username}" class="text-[11px] text-zinc-400 truncate mt-0.5">${acc.bio || ''}</p>
+                            <h3 id="name-${cleanUser}" class="font-extrabold text-base text-white truncate">${acc.name || cleanUser}</h3>
+                            <p class="text-xs text-[#FFFC00] font-mono truncate" dir="ltr">@${cleanUser}</p>
+                            <p id="bio-${cleanUser}" class="text-[11px] text-zinc-400 truncate mt-0.5">${acc.bio || ''}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 mr-2">
@@ -149,9 +177,9 @@
             });
         }
 
-        // سحب فائق السرعة عبر إطلاق الطلبات بالتوازي (Promise.any)
         async function fetchFastProfile(acc, index) {
-            const targetUrl = `https://www.snapchat.com/@${acc.username}`;
+            const cleanUser = acc.username.toLowerCase().trim();
+            const targetUrl = `https://www.snapchat.com/@${cleanUser}`;
             const proxies = [
                 `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
                 `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
@@ -176,21 +204,47 @@
                     }
                 }
 
-                if (acc.avatar) document.getElementById(`avatar-${acc.username}`).src = acc.avatar;
-                if (acc.name) document.getElementById(`name-${acc.username}`).innerText = acc.name;
-                if (acc.bio) document.getElementById(`bio-${acc.username}`).innerText = acc.bio;
+                const avEl = document.getElementById(`avatar-${cleanUser}`);
+                const nmEl = document.getElementById(`name-${cleanUser}`);
+                const biEl = document.getElementById(`bio-${cleanUser}`);
+                if (avEl && acc.avatar) avEl.src = acc.avatar;
+                if (nmEl && acc.name) nmEl.innerText = acc.name;
+                if (biEl && acc.bio) biEl.innerText = acc.bio;
 
                 accounts[index] = acc;
                 saveAccounts();
             } catch (e) {}
         }
 
+        // فتح الحساب داخل نفس نافذة التطبيق الكاملة بدون إطلاق متصفح الآيفون المصغر!
         function goToUser(username) {
-            window.location.href = `users.html?user=${encodeURIComponent(username.trim())}`;
+            const clean = username.trim().replace('@', '').toLowerCase();
+            const targetUrl = `users.html?user=${encodeURIComponent(clean)}`;
+            
+            // إذا كان التطبيق مثبتاً على الشاشة الرئيسية للآيفون، نفتح الصفحة داخل إطار كامل 100% لمنع ظهور شريط سفاري نهائياً
+            const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+            if (isStandalone) {
+                const container = document.getElementById('pwaAppFrameContainer');
+                const frame = document.getElementById('pwaAppFrame');
+                frame.src = targetUrl;
+                container.classList.remove('hidden');
+            } else {
+                window.location.assign(targetUrl);
+            }
         }
 
+        // استقبال أمر الرجوع من صفحة الحساب عند العمل بوضع تطبيق الآيفون
+        window.addEventListener('message', (e) => {
+            if (e.data === 'CLOSE_USER_VIEW') {
+                const container = document.getElementById('pwaAppFrameContainer');
+                const frame = document.getElementById('pwaAppFrame');
+                frame.src = 'about:blank';
+                container.classList.add('hidden');
+            }
+        });
+
         function openQuickUser() {
-            const val = document.getElementById('quickUser').value.trim().replace('@', '');
+            const val = document.getElementById('quickUser').value.trim().replace('@', '').toLowerCase();
             if (val) goToUser(val);
         }
 
@@ -202,9 +256,9 @@
 
         function addNewAccount() {
             const input = document.getElementById('newUsernameInput');
-            const username = input.value.trim().replace('@', '');
+            const username = input.value.trim().replace('@', '').toLowerCase();
             if (!username) return;
-            if (!accounts.some(a => a.username.toLowerCase() === username.toLowerCase())) {
+            if (!accounts.some(a => a.username.toLowerCase() === username)) {
                 accounts.unshift({ username, name: username, bio: '', avatar: '' });
                 saveAccounts();
                 renderAccounts();
