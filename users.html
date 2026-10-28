@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SnapVault - استعراض</title>
+    <title>SnapVault - الحساب</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -34,7 +34,6 @@
             color: #fff;
             border-bottom: 2.5px solid #FFFC00;
         }
-        /* مشغل السناب بشاشة كاملة 100% */
         #storyViewer {
             position: fixed;
             inset: 0;
@@ -43,7 +42,7 @@
             background: #000;
             z-index: 9999;
             touch-action: none;
-            transition: transform 0.2s ease, opacity 0.2s ease;
+            transition: transform 0.2s ease;
         }
         #storyMediaStage video,
         #storyMediaStage img {
@@ -65,20 +64,24 @@
         </button>
         <div class="flex flex-col items-center">
             <span id="navUsername" class="text-sm font-bold font-mono text-zinc-200" dir="ltr">@user</span>
-            <span id="liveIndicator" class="text-[10px] text-emerald-400 hidden">● محدث لحظياً</span>
+            <span id="liveIndicator" class="text-[10px] text-emerald-400 hidden">● متصل ومحدث</span>
         </div>
-        <button onclick="fetchLiveSnapData(true)" class="w-9 h-9 rounded-full bg-zinc-900 flex items-center justify-center text-white active:scale-90">
+        <button onclick="loadSnapchatProfile()" class="w-9 h-9 rounded-full bg-zinc-900 flex items-center justify-center text-white active:scale-90">
             <i class="fa-solid fa-rotate-right text-sm" id="refreshIcon"></i>
         </button>
     </nav>
 
-    <!-- معلومات الحساب -->
+    <!-- معلومات الحساب (مطابقة لـ StoryGrab وسناب شات) -->
     <section class="p-4 flex flex-col items-start border-b border-white/10">
         <div class="flex items-center gap-3.5 w-full">
             <div class="relative shrink-0 cursor-pointer" onclick="playAllFromOldest()">
                 <div class="snap-ring rounded-full">
-                    <img id="profileAvatar" src="" class="w-18 h-18 w-[74px] h-[74px] rounded-full object-cover bg-zinc-900 border-2 border-black">
+                    <img id="profileAvatar" src="" class="w-[74px] h-[74px] rounded-full object-cover bg-zinc-900 border-2 border-black">
                 </div>
+                <button onclick="event.stopPropagation(); downloadAvatar()" 
+                    class="absolute -bottom-1 -left-1 w-6 h-6 rounded-full bg-[#FFFC00] text-black flex items-center justify-center shadow active:scale-90">
+                    <i class="fa-solid fa-download text-[10px]"></i>
+                </button>
             </div>
             <div class="flex-1 min-w-0">
                 <h2 id="profileName" class="text-lg font-extrabold truncate">...</h2>
@@ -87,31 +90,36 @@
             </div>
         </div>
 
-        <p id="profileBio" class="text-xs text-zinc-300 mt-2.5 leading-relaxed"></p>
+        <p id="profileBio" class="text-xs text-zinc-200 mt-2.5 leading-relaxed"></p>
 
         <div class="flex items-center gap-2 mt-3.5 w-full">
             <button onclick="playAllFromOldest()" class="flex-1 bg-[#FFFC00] text-black font-extrabold text-xs py-2.5 px-3 rounded-full flex items-center justify-center gap-1.5 active:scale-95">
-                <i class="fa-solid fa-bolt"></i> تشغيل الستوري (<span id="activeCountBadge">0</span>)
+                <i class="fa-solid fa-eye"></i> الستوري النشط (<span id="activeCountBadge">0</span>)
             </button>
             <button id="selectModeBtn" onclick="toggleSelectMode()" class="bg-zinc-900 text-white font-bold text-xs py-2.5 px-3.5 rounded-full border border-white/15 active:scale-95">
                 تحديد ودمج
             </button>
+            <button onclick="copyProfileLink()" class="w-9 h-9 rounded-full bg-zinc-900 text-zinc-300 flex items-center justify-center border border-white/15 active:scale-90">
+                <i class="fa-solid fa-link text-xs"></i>
+            </button>
         </div>
     </section>
 
-    <!-- بطاقة معاينة آخر سنابة نزلت (تفتح القصة كاملة من الأقدم للأحدث فوراً) -->
+    <!-- بطاقة معاينة آخر سنابة مضافة (تفتح القصة كاملة من الأقدم للأحدث فوراً) -->
     <section id="featuredSection" class="px-4 pt-3.5 hidden">
-        <div onclick="playAllFromOldest()" class="relative w-48 mx-auto aspect-[9/16] rounded-2xl overflow-hidden bg-zinc-900 border-2 border-[#FFFC00] cursor-pointer active:scale-95 transition">
+        <div onclick="playAllFromOldest()" class="relative w-52 mx-auto aspect-[9/16] rounded-2xl overflow-hidden bg-zinc-900 border-2 border-[#FFFC00] cursor-pointer active:scale-95 transition">
             <img id="featuredThumb" src="" class="w-full h-full object-cover">
             <video id="featuredVid" muted playsinline preload="metadata" class="w-full h-full object-cover hidden"></video>
             <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/40"></div>
             <div class="absolute top-2.5 right-2.5 left-2.5 flex justify-between items-center">
                 <span id="featuredBadge" class="bg-black/75 text-white text-[10px] font-extrabold px-2 py-0.5 rounded">Snaps: 0</span>
-                <span class="bg-[#FFFC00] text-black text-[10px] font-extrabold px-2 py-0.5 rounded">جديد</span>
+                <span class="w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center text-[10px]">
+                    <i class="fa-solid fa-video"></i>
+                </span>
             </div>
             <div class="absolute bottom-2.5 inset-x-2.5">
-                <div class="w-full bg-[#FFFC00] text-black font-extrabold text-[11px] py-2 rounded-xl text-center shadow">
-                    <i class="fa-solid fa-play ml-1"></i> مشاهدة القصة كاملة
+                <div class="w-full bg-[#0ea5e9] text-white font-extrabold text-[11px] py-2 rounded-xl text-center shadow">
+                    <i class="fa-solid fa-eye ml-1"></i> View stories
                 </div>
             </div>
         </div>
@@ -119,10 +127,10 @@
 
     <!-- التبويبات -->
     <div class="flex border-b border-white/10 bg-black sticky top-[61px] z-20 text-xs font-extrabold text-zinc-400 mt-3">
-        <button onclick="switchTab('stories')" id="tab-stories" class="flex-1 py-3 text-center tab-active">الستوري (<span id="cStories">0</span>)</button>
+        <button onclick="switchTab('all')" id="tab-all" class="flex-1 py-3 text-center tab-active">الكل (<span id="cAll">0</span>)</button>
+        <button onclick="switchTab('stories')" id="tab-stories" class="flex-1 py-3 text-center">الستوري (<span id="cStories">0</span>)</button>
         <button onclick="switchTab('highlights')" id="tab-highlights" class="flex-1 py-3 text-center">القديمة (<span id="cHighlights">0</span>)</button>
         <button onclick="switchTab('spotlight')" id="tab-spotlight" class="flex-1 py-3 text-center">الأضواء (<span id="cSpot">0</span>)</button>
-        <button onclick="switchTab('all')" id="tab-all" class="flex-1 py-3 text-center">الكل (<span id="cAll">0</span>)</button>
     </div>
 
     <!-- الفرز -->
@@ -134,10 +142,10 @@
         <button onclick="selectAllVisible()" id="selectAllBtn" class="hidden text-[#FFFC00] font-extrabold">تحديد الكل</button>
     </div>
 
-    <!-- حالة الجلب -->
+    <!-- مؤشر الجلب -->
     <div id="loadingBox" class="py-12 flex flex-col items-center justify-center text-center">
         <div class="w-8 h-8 border-2 border-[#FFFC00] border-t-transparent rounded-full animate-spin mb-2"></div>
-        <p class="text-xs text-zinc-400">جاري فتح الاتصال المباشر بسناب شات...</p>
+        <p class="text-xs text-zinc-400">جاري سحب السنابات بأعلى سرعة...</p>
     </div>
 
     <!-- الشبكة -->
@@ -170,14 +178,12 @@
         <div id="storyMediaStage" class="w-full h-full relative">
             <video id="vPlayer" playsinline webkit-playsinline preload="auto" class="hidden"></video>
             <img id="iPlayer" src="" class="hidden">
-            <!-- تحميل مسبق للسنابتين القادمتين لضمان سرعة خارقة بدون أي انتظار -->
             <video id="preloadV1" preload="auto" class="hidden" muted></video>
             <video id="preloadV2" preload="auto" class="hidden" muted></video>
         </div>
 
-        <!-- واجهة المشغل العلوية باتجاه من اليسار لليمين LTR -->
         <div class="viewer-ui absolute top-0 inset-x-0 pt-[env(safe-area-inset-top)] bg-gradient-to-b from-black/80 via-black/30 to-transparent z-20 p-3" dir="ltr">
-            <!-- شريط التقدم يبدأ من اليسار ويتجه لليمين -->
+            <!-- شريط التقدم يبدأ من اليسار لليمين -->
             <div id="viewerBars" class="flex gap-1 mb-2.5 pt-1" dir="ltr"></div>
 
             <div class="flex items-center justify-between px-1">
@@ -216,7 +222,7 @@
         let activeStories = [];
         let gridItems = [];
         let viewerQueue = [];
-        let currentTab = 'stories';
+        let currentTab = 'all';
         let isSelectMode = false;
         let selectedIds = new Set();
 
@@ -224,7 +230,6 @@
         let imgTimer = null;
         let isPaused = false;
         let startX = 0, startY = 0, startTime = 0, holdTimer = null;
-        let bestTimestampLoaded = 0;
 
         document.getElementById('navUsername').innerText = `@${username}`;
         document.getElementById('profileName').innerText = username;
@@ -241,79 +246,90 @@
         }
 
         // =========================================================================
-        // محرك الجلب اللحظي الذكي: يعرض أسرع رد فوراً ثم يحدثه إذا وصل رد أحدث زمنياً!
+        // الجلب المضمون 100%: رابط سناب نظيف تماماً بدون أي إضافات يرفضها جدار الحماية
         // =========================================================================
-        async function fetchLiveSnapData(isManualRefresh = false) {
+        async function loadSnapchatProfile() {
             const icon = document.getElementById('refreshIcon');
             icon.classList.add('animate-spin');
-            if (isManualRefresh) bestTimestampLoaded = 0;
+            document.getElementById('loadingBox').classList.remove('hidden');
 
-            const ts = Date.now();
-            // نستخدم مساري سناب شات (@ و /add/) مع كاسر كاش متغير لضمان عدم جلب نسخة قديمة أبداً
-            const urlAt = `https://www.snapchat.com/@${username}?locale=ar&_t=${ts}`;
-            const urlAdd = `https://www.snapchat.com/add/${username}?locale=ar&_t=${ts}`;
-            const urlClean = `https://www.snapchat.com/@${username}`;
+            // الرابط النظيف الذي يقبله سناب شات دائماً (نفس النسخة الأولى التي اشتغلت معك)
+            const cleanUrl = `https://www.snapchat.com/@${username}`;
+            const addUrl = `https://www.snapchat.com/add/${username}`;
 
-            const endpoints = [
-                `https://corsproxy.io/?${encodeURIComponent(urlAt)}`,
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(urlAt)}`,
-                `https://api.allorigins.win/get?url=${encodeURIComponent(urlAdd)}&disableCache=true`,
-                `https://corsproxy.io/?${encodeURIComponent(urlAdd)}`,
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(urlClean)}`
+            // وسطاء متنوعون: كسر الكاش يكون في رابط الوسيط نفسه وليس في رابط سناب شات!
+            const proxyJobs = [
+                async () => {
+                    const r = await fetch(`https://api.allorigins.win/get?disableCache=true&_=${Date.now()}&url=${encodeURIComponent(cleanUrl)}`, { cache: 'no-store' });
+                    if (!r.ok) throw new Error();
+                    const j = await r.json();
+                    return extractNextDataFromHtml(j.contents);
+                },
+                async () => {
+                    const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(cleanUrl)}`);
+                    if (!r.ok) throw new Error();
+                    return extractNextDataFromHtml(await r.text());
+                },
+                async () => {
+                    const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(cleanUrl)}`);
+                    if (!r.ok) throw new Error();
+                    return extractNextDataFromHtml(await r.text());
+                },
+                async () => {
+                    const r = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(cleanUrl)}`);
+                    if (!r.ok) throw new Error();
+                    return extractNextDataFromHtml(await r.text());
+                },
+                async () => {
+                    const r = await fetch(`https://api.allorigins.win/get?disableCache=true&_=${Date.now()}&url=${encodeURIComponent(addUrl)}`, { cache: 'no-store' });
+                    if (!r.ok) throw new Error();
+                    const j = await r.json();
+                    return extractNextDataFromHtml(j.contents);
+                }
             ];
 
-            let anySuccess = false;
+            let bestParsed = null;
 
-            // نشغل جميع الطلبات بالتوازي، وكلما وصل رد صحيح نفحص حداثة السنابات فيه فوراً
-            const tasks = endpoints.map(async (ep) => {
+            // نعرض أول رد ينجح فوراً لسرعة التصفح، وإذا وصل رد أحدث من وسيط آخر نحدثه تلقائياً
+            await Promise.allSettled(proxyJobs.map(async (job) => {
                 try {
-                    const res = await fetch(ep, { cache: 'no-store' });
-                    if (!res.ok) return;
-                    let text = await res.text();
+                    const props = await job();
+                    const parsed = parseSnapchatProps(props);
 
-                    // إذا كان الرد من allorigins/get المغلف بـ JSON
-                    if (text.startsWith('{"contents":')) {
-                        const wrapped = JSON.parse(text);
-                        text = wrapped.contents || '';
-                    }
-
-                    const match = text.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/i);
-                    if (!match || !match[1]) return;
-
-                    const json = JSON.parse(match[1]);
-                    const pageProps = json?.props?.pageProps;
-                    if (!pageProps) return;
-
-                    const parsed = parsePageProps(pageProps);
-                    anySuccess = true;
-
-                    // نقارن بأحدث طابع زمني للسنابات (وليس العدد!) لضمان أخذ السنابات الجديدة دائماً
-                    if (parsed.maxTimestamp >= bestTimestampLoaded || allItems.length === 0) {
-                        bestTimestampLoaded = parsed.maxTimestamp;
-                        applyParsedData(parsed);
+                    if (!bestParsed || parsed.maxTimestamp > bestParsed.maxTimestamp || (parsed.items.length > bestParsed.items.length && parsed.maxTimestamp >= bestParsed.maxTimestamp)) {
+                        bestParsed = parsed;
+                        renderProfileAndSnaps(bestParsed);
                         document.getElementById('loadingBox').classList.add('hidden');
                         document.getElementById('liveIndicator').classList.remove('hidden');
                     }
                 } catch (e) {}
-            });
-
-            await Promise.allSettled(tasks);
+            }));
 
             document.getElementById('loadingBox').classList.add('hidden');
             setTimeout(() => icon.classList.remove('animate-spin'), 400);
 
-            if (!anySuccess && allItems.length === 0) {
+            if (!bestParsed) {
                 document.getElementById('mediaGrid').innerHTML = `
                     <div class="col-span-2 py-12 px-4 text-center bg-zinc-900/50 rounded-2xl border border-white/10">
-                        <p class="text-xs text-zinc-300 mb-3">تعذر جلب البيانات من الخادم حالياً، اضغط للتحديث الفوري.</p>
-                        <button onclick="fetchLiveSnapData(true)" class="bg-[#FFFC00] text-black font-extrabold text-xs px-4 py-2 rounded-xl">تحديث الآن</button>
+                        <p class="text-xs text-zinc-300 mb-3">الخادم مشغول، اضغط لإعادة الجلب الفوري.</p>
+                        <button onclick="loadSnapchatProfile()" class="bg-[#FFFC00] text-black font-extrabold text-xs px-4 py-2 rounded-xl">تحديث الآن</button>
                     </div>
                 `;
             }
         }
 
-        function parsePageProps(props) {
-            // دعم الحسابات العامة (publicProfileInfo) والحسابات العادية (userInfo) معاً
+        function extractNextDataFromHtml(html) {
+            if (!html || typeof html !== 'string') throw new Error('Empty');
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const scriptEl = doc.getElementById('__NEXT_DATA__');
+            if (!scriptEl) throw new Error('No __NEXT_DATA__');
+            const json = JSON.parse(scriptEl.textContent);
+            const props = json?.props?.pageProps;
+            if (!props) throw new Error('No pageProps');
+            return props;
+        }
+
+        function parseSnapchatProps(props) {
             const pub = props?.userProfile?.publicProfileInfo || props?.publicProfileInfo;
             const usr = props?.userProfile?.userInfo || props?.userInfo;
             const info = pub || usr || {};
@@ -330,16 +346,17 @@
             const items = [];
             const seen = new Set();
             let order = 0;
-            let maxTimestamp = 1;
+            let maxTimestamp = 0;
 
-            function addSnap(snap, category, label, fallbackTs) {
+            function addSnap(snap, category, title, fallbackTs) {
                 const urls = snap?.snapUrls || {};
                 const mediaUrl = urls.mediaUrl || urls.mediaPreviewUrl?.value || snap?.mediaUrl;
                 if (!mediaUrl || typeof mediaUrl !== 'string' || seen.has(mediaUrl)) return;
                 seen.add(mediaUrl);
 
-                const thumb = urls.mediaPreviewUrl?.value || snap?.thumbnailUrl?.value || mediaUrl;
-                const isVideo = snap?.snapMediaType === 1 || mediaUrl.includes('.mp4') || (!mediaUrl.includes('.jpg') && !mediaUrl.includes('.png') && snap?.snapMediaType !== 0);
+                const thumb = urls.mediaPreviewUrl?.value || snap?.thumbnailUrl?.value || '';
+                // في سناب شات: 0 = صورة، 1 = فيديو بصوت، 2 = فيديو بدون صوت
+                const isVideo = snap?.snapMediaType === 1 || snap?.snapMediaType === 2 || mediaUrl.includes('.mp4');
                 const snapTs = snap?.timestampInSec?.value ? Number(snap.timestampInSec.value) * 1000 : fallbackTs;
 
                 if (snapTs > maxTimestamp) maxTimestamp = snapTs;
@@ -350,27 +367,27 @@
                     category,
                     type: isVideo ? 'video' : 'image',
                     url: mediaUrl,
-                    thumb,
+                    thumb: thumb,
                     timestamp: snapTs,
                     timeAgo: formatTimeAgo(snap?.timestampInSec?.value),
-                    title: label
+                    title
                 });
             }
 
-            // 1. الستوري النشط (من كل المسارات الممكنة في سناب)
-            const storySources = [
+            // 1. الستوري النشط (جميع المسارات المعتمدة في سناب شات)
+            const storyLists = [
                 props?.story?.snapList,
                 props?.publicStory?.snapList,
                 props?.userProfile?.publicProfileInfo?.story?.snapList,
                 props?.userProfile?.userInfo?.story?.snapList
             ];
-            storySources.forEach(list => {
+            storyLists.forEach(list => {
                 if (Array.isArray(list)) {
-                    list.forEach((s, i) => addSnap(s, 'stories', `ستوري ${i + 1}`, Date.now() - (list.length - i) * 60000));
+                    list.forEach((s, i) => addSnap(s, 'stories', `ستوري (${i + 1}/${list.length})`, Date.now() - (list.length - i) * 60000));
                 }
             });
 
-            // 2. القصص المحفوظة (القديمة)
+            // 2. القصص المحفوظة (Curated Highlights)
             const highlights = props?.curatedHighlights || [];
             highlights.forEach((h, hi) => {
                 const hTitle = h?.storyTitle?.value || `قصة ${hi + 1}`;
@@ -387,23 +404,11 @@
                 });
             });
 
-            // 4. ماسح احتياطي إذا وضع سناب شات السنابات في كائن فرعي آخر
-            if (items.length === 0) {
-                (function scan(obj) {
-                    if (!obj || typeof obj !== 'object') return;
-                    if (obj.snapUrls?.mediaUrl) {
-                        addSnap(obj, 'stories', `سناب ${order + 1}`, Date.now());
-                        return;
-                    }
-                    Object.values(obj).forEach(scan);
-                })(props);
-            }
-
             return { name, bio, avatar, subs, items, maxTimestamp };
         }
 
         function formatTimeAgo(sec) {
-            if (!sec) return 'حديثاً';
+            if (!sec) return 'نشط';
             const diffMin = Math.floor((Date.now() / 1000 - Number(sec)) / 60);
             if (diffMin < 1) return 'الآن';
             if (diffMin < 60) return `منذ ${diffMin} د`;
@@ -412,7 +417,7 @@
             return `منذ ${Math.floor(diffHr / 24)} يوم`;
         }
 
-        function applyParsedData(data) {
+        function renderProfileAndSnaps(data) {
             document.getElementById('profileName').innerText = data.name;
             document.getElementById('vName').innerText = data.name;
             document.getElementById('profileBio').innerText = data.bio;
@@ -428,20 +433,11 @@
             const spCount = allItems.filter(i => i.category === 'spotlight').length;
 
             document.getElementById('activeCountBadge').innerText = stCount || allItems.length;
+            document.getElementById('cAll').innerText = allItems.length;
             document.getElementById('cStories').innerText = stCount;
             document.getElementById('cHighlights').innerText = hlCount;
             document.getElementById('cSpot').innerText = spCount;
-            document.getElementById('cAll').innerText = allItems.length;
 
-            // إذا لم يكن هناك ستوري نشط اليوم ولكن يوجد أرشيف/أضواء، نفتح تبويب الكل تلقائياً
-            if (stCount === 0 && allItems.length > 0 && currentTab === 'stories') {
-                currentTab = 'all';
-                ['stories', 'highlights', 'spotlight', 'all'].forEach(t => {
-                    document.getElementById(`tab-${t}`).classList.toggle('tab-active', t === 'all');
-                });
-            }
-
-            // إعداد بطاقة معاينة آخر سنابة وتحميل أول سنابة مسبقاً بالذاكرة لفتحها في 0 ثانية!
             const pool = stCount > 0 ? activeStories : allItems;
             const featSec = document.getElementById('featuredSection');
 
@@ -449,12 +445,12 @@
                 const latest = pool[pool.length - 1];
                 const oldest = pool[0];
                 document.getElementById('featuredBadge').innerText = `Snaps: ${pool.length}`;
-                document.getElementById('lastSyncTime').innerText = `آخر سنابة: ${latest.timeAgo}`;
+                document.getElementById('lastSyncTime').innerText = `القصص النشطة: ${stCount} • آخر تحديث: ${latest.timeAgo}`;
                 featSec.classList.remove('hidden');
 
                 const fImg = document.getElementById('featuredThumb');
                 const fVid = document.getElementById('featuredVid');
-                if (latest.thumb && latest.thumb !== latest.url) {
+                if (latest.thumb) {
                     fVid.classList.add('hidden');
                     fImg.classList.remove('hidden');
                     fImg.src = latest.thumb;
@@ -468,13 +464,13 @@
                     fImg.src = latest.url;
                 }
 
-                // تحميل مسبق لأول سنابة في القصة لكي تعمل فور الضغط بدون أي انتظار
+                // تحميل مسبق لأول سنابة لفتح فوري
                 if (oldest.type === 'video') {
                     document.getElementById('preloadV1').src = oldest.url;
                 }
             } else {
                 featSec.classList.add('hidden');
-                document.getElementById('lastSyncTime').innerText = 'لا يوجد ستوري نشط خلال 24 ساعة';
+                document.getElementById('lastSyncTime').innerText = 'لا توجد قصص نشطة حالياً لهذا الحساب';
             }
 
             renderGrid();
@@ -482,7 +478,7 @@
 
         function switchTab(tab) {
             currentTab = tab;
-            ['stories', 'highlights', 'spotlight', 'all'].forEach(t => {
+            ['all', 'stories', 'highlights', 'spotlight'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.toggle('tab-active', t === tab);
             });
             renderGrid();
@@ -509,9 +505,9 @@
                 
                 card.onclick = () => isSelectMode ? toggleSelect(item.id) : openViewer(gridItems, idx);
 
-                const useImg = (item.thumb && item.thumb !== item.url) || item.type === 'image';
+                const hasThumb = Boolean(item.thumb) || item.type === 'image';
                 card.innerHTML = `
-                    ${useImg 
+                    ${hasThumb 
                         ? `<img src="${item.thumb || item.url}" loading="lazy" class="w-full h-full object-cover pointer-events-none">`
                         : `<video src="${item.url}#t=0.1" preload="metadata" muted playsinline class="w-full h-full object-cover pointer-events-none"></video>`
                     }
@@ -520,7 +516,7 @@
                         <span class="bg-black/70 text-[10px] font-bold px-2 py-0.5 rounded text-white">${item.timeAgo}</span>
                         ${isSelectMode 
                             ? `<div class="w-6 h-6 rounded-full flex items-center justify-center ${isSel ? 'bg-[#FFFC00] text-black' : 'bg-black/60 border border-white/50 text-transparent'}"><i class="fa-solid fa-check text-xs"></i></div>`
-                            : `<span class="text-white text-xs drop-shadow"><i class="fa-solid ${item.type === 'video' ? 'fa-play' : 'fa-image'}"></i></span>`
+                            : `<span class="text-white text-xs drop-shadow"><i class="fa-solid ${item.type === 'video' ? 'fa-video' : 'fa-image'}"></i></span>`
                         }
                     </div>
                     <div class="absolute bottom-2 inset-x-2 flex justify-between items-center">
@@ -536,7 +532,7 @@
         }
 
         // =========================================================================
-        // مشغل السناب فائق السرعة (اتجاه التقدم والضغط من اليسار إلى اليمين LTR)
+        // مشغل السناب الفوري (الخط الزمني والتنقل من اليسار لليمين LTR)
         // =========================================================================
         function playAllFromOldest() {
             const queue = activeStories.length > 0 ? activeStories : allItems;
@@ -569,7 +565,7 @@
             vIndex = idx;
             const item = viewerQueue[idx];
 
-            // رسم أشرطة التقدم من اليسار لليمين (LTR)
+            // أشرطة التقدم من اليسار لليمين
             const bars = document.getElementById('viewerBars');
             bars.innerHTML = viewerQueue.map((_, i) => `
                 <div class="h-[2.5px] flex-1 rounded-full bg-white/30 overflow-hidden" dir="ltr">
@@ -604,7 +600,7 @@
                 imgTimer = setTimeout(() => nextSnap(), 4000);
             }
 
-            // تحميل مسبق للسنابتين القادمتين في الخلفية لفتح فوري بدون تقطيع
+            // تحميل مسبق للسنابتين التاليتين لسرعة تصفح فورية
             [viewerQueue[idx + 1], viewerQueue[idx + 2]].forEach((nxt, nIdx) => {
                 if (!nxt) return;
                 if (nxt.type === 'video') {
@@ -631,7 +627,7 @@
             document.getElementById('storyViewer').classList.add('hidden');
         }
 
-        // التحكم باللمس: يمين الشاشة = السنابة التالية | يسار الشاشة = السنابة السابقة (من اليسار لليمين)
+        // التحكم باللمس: اليمين للتقدم للسنابة التالية، اليسار للرجوع للسابقة
         const stage = document.getElementById('storyMediaStage');
         const viewer = document.getElementById('storyViewer');
 
@@ -678,12 +674,11 @@
             }
             viewer.style.transform = 'translateY(0)';
 
-            // النقر السريع: اليمين للتالي، اليسار للسابق
             if (dt < 260 && Math.abs(dx) < 30 && Math.abs(dy) < 30) {
                 if (startX > window.innerWidth * 0.32) {
-                    nextSnap(); // ضغط على اليمين أو الوسط -> السنابة التالية
+                    nextSnap();
                 } else {
-                    prevSnap(); // ضغط على اليسار -> السنابة السابقة
+                    prevSnap();
                 }
             }
         });
@@ -695,7 +690,7 @@
         });
 
         // =========================================================================
-        // التحميل والدمج الخفيف مع الصوت
+        // التحميل والدمج مع الصوت
         // =========================================================================
         async function fetchBlob(url, isVideo = true) {
             const list = [url, `https://corsproxy.io/?${encodeURIComponent(url)}`];
@@ -728,6 +723,15 @@
         function downloadCurrentInViewer() {
             const it = viewerQueue[vIndex];
             if (it) downloadSingle(it.url, `${username}_${it.id}.${it.type === 'video' ? 'mp4' : 'jpg'}`);
+        }
+
+        function downloadAvatar() {
+            downloadSingle(document.getElementById('profileAvatar').src, `${username}_avatar.jpg`);
+        }
+
+        function copyProfileLink() {
+            navigator.clipboard.writeText(`https://www.snapchat.com/@${username}`);
+            alert('تم نسخ رابط الحساب!');
         }
 
         function toggleSelectMode() {
@@ -859,7 +863,7 @@
             }
         }
 
-        fetchLiveSnapData(false);
+        loadSnapchatProfile();
     </script>
 </body>
 </html>
